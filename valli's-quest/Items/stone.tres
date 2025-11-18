@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=5 format=3 uid="uid://mwtevlhj26no"]
+
+[ext_resource type="Script" uid="uid://qprdn3m2hg81" path="res://Items/ItemEffects/item_effect.gd" id="1_gqhqt"]
+[ext_resource type="Script" uid="uid://j0wldbk6ari5" path="res://Items/Scripts/resource_item_data.gd" id="1_mndqm"]
+[ext_resource type="Texture2D" uid="uid://du6tq51y0fwdu" path="res://Items/Sprites/items.png" id="2_6sq6v"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gqhqt"]
+atlas = ExtResource("2_6sq6v")
+region = Rect2(64, 0, 32, 32)
+
+[resource]
+script = ExtResource("1_mndqm")
+name = "Stone"
+description = "It's not just a boulder, it's a rock!"
+texture = SubResource("AtlasTexture_gqhqt")
+metadata/_custom_type_script = "uid://j0wldbk6ari5"
