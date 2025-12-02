@@ -6,11 +6,17 @@ signal level_load_initiated
 signal level_load_completed
 
 @onready var sceneTransition = _find_scene_transition()
-# optional components
+
 var tilemap_bounds: Array[Vector2] = []
 var targetTransition: String = ""
 var positionOffset: Vector2 = Vector2.ZERO
 var currentScenePath: String = ""
+
+# New flag to control ignoring transitions temporarily
+var ignoreTransitions: bool = false
+
+# Store the name of the transition used to enter the current level to prevent backtracking
+var previousTransitionName: String = ""
 
 func debug_print_state():
 	if PlayerManager and PlayerManager.player:
@@ -22,14 +28,11 @@ func debug_print_state():
 	else:
 		print("[DEBUG] PlayerManager or player is null")
 
-
 func _find_scene_transition() -> Node:
-	# safer lookup with debug
 	if get_tree().root.has_node("SceneTransition"):
 		var st = get_tree().root.get_node("SceneTransition")
 		print("[LevelManager DEBUG] Found SceneTransition node at root.")
 		return st
-	# try alternative common locations
 	if get_tree().current_scene and get_tree().current_scene.has_node("SceneTransition"):
 		var st2 = get_tree().current_scene.get_node("SceneTransition")
 		print("[LevelManager DEBUG] Found SceneTransition in current_scene.")
@@ -39,7 +42,6 @@ func _find_scene_transition() -> Node:
 
 func _ready() -> void:
 	await get_tree().process_frame
-
 	if currentScenePath == "":
 		var current_scene = get_tree().current_scene
 		if current_scene != null:
@@ -47,31 +49,34 @@ func _ready() -> void:
 			if path != "":
 				currentScenePath = path
 				print("[LevelManager DEBUG] Set currentScenePath on ready: %s" % currentScenePath)
-
 	emit_signal("level_load_completed")
 	print("[LevelManager DEBUG] ready complete")
-
 
 func set_tilemap_bounds(bounds: Array[Vector2]) -> void:
 	tilemap_bounds = bounds
 	emit_signal("tilemap_bounds_updated", bounds)
 
 func loadNewLevel(levelPath: String, _targetTransition: String, _positionOffset: Vector2) -> void:
-	currentScenePath = levelPath  # Set early to avoid empty path issues
+	currentScenePath = levelPath # Set early to avoid empty path issues
 	get_tree().paused = true
 	targetTransition = _targetTransition
 	positionOffset = _positionOffset
 
+	# Store the transition used to arrive here — prevents immediate backtracking
+	previousTransitionName = _targetTransition
+
+	ignoreTransitions = true  # START ignoring transitions during load
+	
 	await _fade_out()
 	emit_signal("level_load_initiated")
 	print("[LevelManager DEBUG] emitted level_load_initiated")
+
 	await get_tree().process_frame
 
 	var err = get_tree().change_scene_to_file(levelPath)
 	if err != OK:
 		push_error("Failed to load level: %s" % levelPath)
 	else:
-		# Confirm path after successful load
 		currentScenePath = levelPath
 		print("[LevelManager DEBUG] Loaded scene: %s" % currentScenePath)
 
@@ -81,44 +86,40 @@ func loadNewLevel(levelPath: String, _targetTransition: String, _positionOffset:
 	print("[LevelManager DEBUG] after fade_in — unpausing tree")
 	get_tree().paused = false
 	print("[LevelManager DEBUG] get_tree().paused = %s" % str(get_tree().paused))
+
 	await get_tree().process_frame
+
+	ignoreTransitions = false  # STOP ignoring transitions after load
 
 	emit_signal("level_load_completed")
 	print("[LevelManager DEBUG] emitted level_load_completed")
-
 
 func _fade_out() -> void:
 	if _is_player_dead():
 		print("[LevelManager DEBUG] Player dead — skipping fadeOut()")
 		await get_tree().process_frame
 		return
-
 	if sceneTransition:
 		await sceneTransition.fadeOut()
 	else:
 		await get_tree().create_timer(0.4).timeout
 
-
 func _fade_in() -> void:
 	if _is_player_dead():
 		print("[LevelManager DEBUG] Player dead — skipping fadeIn()")
 		return
-
 	if sceneTransition:
 		await sceneTransition.fadeIn()
 	else:
 		await get_tree().create_timer(0.4).timeout
-
-
 
 func reset() -> void:
 	print("[LevelManager DEBUG] LevelManager reset")
 	currentScenePath = ""
 	targetTransition = ""
 	positionOffset = Vector2.ZERO
-
-
-
+	previousTransitionName = ""
+	ignoreTransitions = false
 
 func _is_player_dead() -> bool:
 	if PlayerManager and PlayerManager.player:
