@@ -1,9 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://do4fi3lqxgx4p"]
+[gd_scene load_steps=8 format=3 uid="uid://do4fi3lqxgx4p"]
 
 [ext_resource type="Script" uid="uid://wls4wqsfw65j" path="res://GUI/SceneTransition/scene_transition.gd" id="1_6rk30"]
 
-[sub_resource type="Animation" id="Animation_td267"]
-resource_name = "default"
+[sub_resource type="Animation" id="Animation_2u6hy"]
+length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -17,8 +17,8 @@ tracks/0/keys = {
 "values": [Color(0, 0, 0, 0)]
 }
 
-[sub_resource type="Animation" id="Animation_2u6hy"]
-length = 0.001
+[sub_resource type="Animation" id="Animation_td267"]
+resource_name = "default"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -58,10 +58,26 @@ tracks/0/path = NodePath("ColorRect:color")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
+"times": PackedFloat32Array(0, 0.0001, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1)]
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_6rk30"]
+resource_name = "fade_out_2"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ColorRect:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0001, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1), Color(0, 0, 0, 1)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_5rcyc"]
@@ -69,7 +85,8 @@ _data = {
 &"RESET": SubResource("Animation_2u6hy"),
 &"default": SubResource("Animation_td267"),
 &"fade_in": SubResource("Animation_kfe0w"),
-&"fade_out": SubResource("Animation_qhvlr")
+&"fade_out": SubResource("Animation_qhvlr"),
+&"fade_out_2": SubResource("Animation_6rk30")
 }
 
 [node name="SceneTransition" type="CanvasLayer"]

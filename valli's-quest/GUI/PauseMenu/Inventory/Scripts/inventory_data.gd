@@ -5,119 +5,122 @@ extends Resource
 
 signal inventory_changed
 
+func _init() -> void:
+	connectSlots()
+
 func addItem(item: ItemData, count: int = 1) -> bool:
-	var emptySlotIndex = -1
-	
-	for i in range(slots.size()):
-		var slot = slots[i]
-		if slot != null and slot.itemData == item:
-			slot.quantity += count
+	print("Adding item: ", item, " count: ", count)
+	for s in slots:
+		if s != null and s.itemData == item:
+			s.quantity += count
+			print("Stacked item. New qty: ", s.quantity)
 			emit_signal("inventory_changed")
 			return true
-		elif slot == null and emptySlotIndex == -1:
-			emptySlotIndex = i
 	
-	if emptySlotIndex != -1:
-		var newSlot = SlotData.new()
-		newSlot.itemData = item
-		newSlot.quantity = count
-		slots[emptySlotIndex] = newSlot
-		emit_signal("inventory_changed")
-		return true
+	for i in range(slots.size()):
+		if slots[i] == null:
+			var newSlot = SlotData.new()
+			newSlot.itemData = item
+			newSlot.quantity = count
+			slots[i] = newSlot
+			newSlot.changed.connect(slotChanged)
+			print("Added new slot at index ", i)
+			emit_signal("inventory_changed")
+			return true
 	
+	print("Inventory full. Cannot add item.")
 	return false
 
 
-func getSaveData() -> Array:
-	var saveArray = []
-	
-	for slot in slots:
-		if slot == null:
-			continue
-		if slot.itemData == null:
-			continue
-		if slot.quantity <= 0:
-			continue
-		
-		# Add slot data dictionary
-		saveArray.append({
-			"item": slot.itemData.resource_path,
-			"quantity": slot.quantity
-		})
-	
-	return saveArray
+func connectSlots() -> void:
+	for s in slots:
+		if s != null:
+			s.changed.connect(slotChanged)
 
+func slotChanged() -> void:
+	for s in slots:
+		if s != null:
+			if s.quantity < 1:
+				s.changed.disconnect(slotChanged)
+				var index: int = slots.find(s)
+				slots[index] = null
+				emit_signal("inventory_changed")
+
+func getSaveData() -> Array:
+	var itemSave: Array = []
+	for s in slots:
+		itemSave.append(itemToSave(s))
+	return itemSave
 
 func itemToSave(slot: SlotData) -> Dictionary:
-	var saveDict = {"item": "", "quantity": 0}
-	
-	if slot == null:
-		return saveDict
-	
-	if slot.itemData == null:
-		return saveDict
-	
-	# If everything is valid, update dictionary
-	saveDict["item"] = slot.itemData.resource_path
-	saveDict["quantity"] = slot.quantity
-	
-	return saveDict
-
+	var result: Dictionary = {"item": "", "quantity": 0}
+	if slot != null:
+		result["quantity"] = slot.quantity
+		if slot.itemData != null:
+			result["item"] = slot.itemData.resource_path
+	return result
 
 func parseSaveData(saveData: Array) -> void:
-	var desiredSize = max(slots.size(), saveData.size())
-	
-	slots.resize(desiredSize)
-	for i in range(slots.size()):
-		slots[i] = null
-	
+	var size: int = slots.size()
+	slots.clear()
+	slots.resize(size)
+
 	for i in range(saveData.size()):
-		var data = saveData[i]
-		if data.has("item") and data.has("quantity") and data["item"] != "":
-			var newSlot = SlotData.new()
-			newSlot.itemData = load(data["item"])
-			newSlot.quantity = int(data["quantity"])
-			slots[i] = newSlot
-	
-	emit_signal("inventory_changed")
+		var sData: Dictionary = saveData[i]
+		slots[i] = itemFromSave(sData)
 
-
+	connectSlots()
 
 func itemFromSave(saveObject: Dictionary) -> SlotData:
-	var itemPath = saveObject.get("item", "")
-	assert(itemPath != "", "itemFromSave: 'item' path cannot be empty")
+	if not saveObject.has("item") or saveObject["item"] == "":
+		return null
 
-	var itemRes = ResourceLoader.load(itemPath)
-	assert(itemRes != null, "itemFromSave: Failed to load resource at '%s'" % itemPath)
+	var itemRes: Resource = load(saveObject["item"])
+	if itemRes == null:
+		return null
 
-	var slot = SlotData.new()
+	var slot: SlotData = SlotData.new()
 	slot.itemData = itemRes
 	slot.quantity = int(saveObject.get("quantity", 0))
 	return slot
 
-
 func useItem(item: ItemData, count: int = 1) -> bool:
-	print("useItem being called")
-	var remaining = count
-	var itemPath = item.resource_path  # Use path for comparison
+	if item == null:
+		return false
+
+	var remaining: int = count
+	var itemPath: String = item.resource_path
 
 	for slot in slots:
 		if slot != null and slot.itemData != null and slot.quantity > 0:
 			if slot.itemData.resource_path == itemPath:
-				var used = min(slot.quantity, remaining)
-				print("Using item:", slot.itemData.name, " Quantity in slot:", slot.quantity)
+				var used: int = min(slot.quantity, remaining)
 
-				slot.itemData.use()  # Call effects
+				slot.itemData.use()  # Call item effect
 				slot.quantity -= used
 				remaining -= used
 
 				if slot.quantity <= 0:
-					# Clear empty slot
 					slot.itemData = null
 					slot.quantity = 0
 
 				if remaining <= 0:
 					emit_signal("inventory_changed")
 					return true
+
 	# Not enough quantity found
 	return false
+
+func get_item_held_qty(item: ItemData) -> int:
+	if item == null:
+		return 0
+
+	var total: int = 0
+	var itemPath: String = item.resource_path
+
+	for slot in slots:
+		if slot != null and slot.itemData != null:
+			if slot.itemData.resource_path == itemPath:
+				total += slot.quantity
+
+	return total

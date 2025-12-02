@@ -10,7 +10,9 @@ region = Rect2(64, 0, 32, 32)
 
 [resource]
 script = ExtResource("1_mndqm")
-name = "Stone"
-description = "It's not just a boulder, it's a rock!"
+name = "Quinto's Stone"
+description = "It's not just a boulder...
+it's a rock!"
 texture = SubResource("AtlasTexture_gqhqt")
+cost = 1
 metadata/_custom_type_script = "uid://j0wldbk6ari5"

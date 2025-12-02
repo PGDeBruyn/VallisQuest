@@ -44,4 +44,4 @@ func _on_direction_changed(new_dir: Vector2) -> void:
 			closest_dir = dir
 
 	var target_angle = direction_angles[closest_dir]
-	rotation_degrees = lerp_angle(rotation_degrees, target_angle, 0.3)
+	rotation_degrees = target_angle  # Instant set, no lerp

@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://kl385fwgnb4c"]
+
+[ext_resource type="FontFile" uid="uid://sb5vyiv5d3qq" path="res://GUI/fonts/m5x7.ttf" id="1_5unjq"]
+[ext_resource type="Script" uid="uid://7jraeoyd5wel" path="res://GUI/shop_menu/shop_item_button.gd" id="1_rm5x1"]
+[ext_resource type="Texture2D" uid="uid://du6tq51y0fwdu" path="res://Items/Sprites/items.png" id="2_rm5x1"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wcyy0"]
+atlas = ExtResource("2_rm5x1")
+region = Rect2(0, 0, 32, 32)
+
+[node name="ShopItemButton" type="Button"]
+custom_minimum_size = Vector2(220, 36)
+script = ExtResource("1_rm5x1")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 10.0
+offset_right = 193.0
+offset_bottom = 28.0
+text = "label for the item so we can see what it is"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="PriceLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 203.0
+offset_top = 11.0
+offset_right = 243.0
+offset_bottom = 29.0
+theme_override_fonts/font = ExtResource("1_5unjq")
+text = "99"
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 2.0
+offset_right = 30.0
+offset_bottom = 34.0
+texture = SubResource("AtlasTexture_wcyy0")
+stretch_mode = 3

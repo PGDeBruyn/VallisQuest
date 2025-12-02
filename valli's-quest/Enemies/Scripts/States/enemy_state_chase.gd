@@ -1,4 +1,3 @@
-# EnemyStateChase.gd
 class_name EnemyStateChase
 extends EnemyState
 
@@ -39,6 +38,12 @@ func process(delta: float) -> EnemyState:
 	var player = PlayerManager.player
 	if player == null:
 		return null
+
+	# If player is dead, do not chase
+	if player.isDead:
+		playerVisible = false
+		enemy.velocity = Vector2.ZERO
+		return fallbackState
 
 	_updateAggroTimer(delta)
 
@@ -81,6 +86,15 @@ func _updateEnemyAnimation() -> void:
 	enemy._updateAnimation(animationName)
 
 func _onPlayerSpotted() -> void:
+	var player = PlayerManager.player
+	if player == null:
+		return
+
+	# Ignore player spotted if player is dead
+	if player.isDead:
+		playerVisible = false
+		return
+
 	playerVisible = true
 	if stateMachine.currentState is EnemyStateStun or stateMachine.currentState is EnemyStateDestroy:
 		return

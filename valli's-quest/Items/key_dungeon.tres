@@ -11,6 +11,8 @@ region = Rect2(224, 0, 32, 32)
 [resource]
 script = ExtResource("2_u6d1n")
 name = "Dungeon Key"
-description = "A standard key. Used to open locked doors."
+description = "A standard key.
+Used to open locked doors."
 texture = SubResource("AtlasTexture_y1yal")
+cost = 5
 metadata/_custom_type_script = "uid://j0wldbk6ari5"

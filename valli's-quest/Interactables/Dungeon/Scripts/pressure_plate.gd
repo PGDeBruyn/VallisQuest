@@ -49,11 +49,15 @@ func _apply_visual() -> void:
 
 
 func _play_sfx() -> void:
+	if not sfx.is_inside_tree():
+		return
+	
 	if active:
 		sfx.stream = sfxOn
 	else:
 		sfx.stream = sfxOff
 	sfx.play()
+
 
 func _emit_status() -> void:
 	if active:

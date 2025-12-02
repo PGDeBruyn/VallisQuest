@@ -35,3 +35,11 @@ func _sync_animation() -> void:
 func _play_anim(anim: String) -> void:
 	if animator.has_animation(anim):
 		animator.play(anim)
+
+
+func _on_pressure_plate_activated() -> void:
+	pass # Replace with function body.
+
+
+func _on_pressure_plate_deactivated() -> void:
+	pass # Replace with function body.

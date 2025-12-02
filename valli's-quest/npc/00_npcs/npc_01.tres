@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="NPCResource" load_steps=4 format=3 uid="uid://dxm5enpqev1hl"]
+
+[ext_resource type="Texture2D" uid="uid://3u1wevbqx83i" path="res://npc/sprites/portraits/npc_portrait_02.png" id="1_fxmbg"]
+[ext_resource type="Script" uid="uid://b58jf2kamfwrm" path="res://npc/scripts/npc_resource.gd" id="1_mlker"]
+[ext_resource type="Texture2D" uid="uid://da1emxxfaino5" path="res://npc/sprites/npc_sprite_02.png" id="3_4tdd8"]
+
+[resource]
+script = ExtResource("1_mlker")
+npcName = "Andross"
+sprite = ExtResource("3_4tdd8")
+portrait = ExtResource("1_fxmbg")
+dialogueAudioPitch = 0.5
+metadata/_custom_type_script = "uid://b58jf2kamfwrm"

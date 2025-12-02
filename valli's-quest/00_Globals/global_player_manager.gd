@@ -1,17 +1,37 @@
 extends Node
 
+signal currency_changed(new_amount: int)
 signal player_spawned(player: Player)
 signal player_died()
 signal interactPressed
 
-const PLAYER_SCENE = preload("uid://dosoxf3yfv1xw")  # Replace with your actual path
+const PLAYER_SCENE = preload("uid://dosoxf3yfv1xw")  # Your player scene path
 const INVENTORY_DATA: InventoryData = preload("res://GUI/PauseMenu/Inventory/player_inventory.tres")
 
 var player: Player = null
 var _is_spawning: bool = false
 
+var _gemAmount: int = 0
+
+func setGemAmount(value: int) -> void:
+	if _gemAmount == value:
+		return
+	_gemAmount = value
+	emit_signal("currency_changed", _gemAmount)
+
+func getGemAmount() -> int:
+	return _gemAmount
+
+func addGems(amount: int) -> void:
+	setGemAmount(_gemAmount + amount)
+
+func spendGems(amount: int) -> bool:
+	if _gemAmount >= amount:
+		setGemAmount(_gemAmount - amount)
+		return true
+	return false
+
 func get_player() -> Player:
-	# Lazy creation of the player instance
 	if player == null and not _is_spawning:
 		_spawn_player()
 	return player
@@ -20,6 +40,13 @@ func _spawn_player() -> void:
 	_is_spawning = true
 	player = PLAYER_SCENE.instantiate() as Player
 	add_child(player)
+	
+	# Connect player's died and revived signals properly with Callable
+	if player.has_signal("died"):
+		player.connect("died", Callable(self, "_on_player_died"))
+	if player.has_signal("revived"):
+		player.connect("revived", Callable(self, "_on_player_revived"))
+		
 	emit_signal("player_spawned", player)
 	_is_spawning = false
 
@@ -51,15 +78,12 @@ func play_audio(audio: AudioStream) -> void:
 		player.sfx.stream = audio
 		player.sfx.play()
 
-# UPDATED methods to work with Player's health naming
 func set_health(health_val: int, max_health_val: int) -> void:
 	if get_player():
-		# Use a public method in Player if you have one (recommended)
 		if "setHealth" in player:
 			player.setHealth(health_val, max_health_val)
 		else:
-			# Directly set properties if no public method exists (less safe)
-			player._updateHealth(health_val)  # Note: underscore means private, so this is a hack
+			player._updateHealth(health_val)  # fallback if no public method
 			player.maxHealth = max_health_val
 
 func get_health() -> Dictionary:
@@ -70,13 +94,21 @@ func get_health() -> Dictionary:
 		}
 	return {}
 
-func get_inventory():
-	return INVENTORY_DATA  # or wherever your inventory instance is
+func get_inventory() -> InventoryData:
+	return INVENTORY_DATA
 
-# NEW method added to fix your error (reparent player safely)
 func reparentPlayer(new_parent: Node) -> void:
 	if get_player():
 		var current_parent = player.get_parent()
 		if current_parent:
 			current_parent.remove_child(player)
 		new_parent.add_child(player)
+
+# Called when player dies
+func _on_player_died() -> void:
+	emit_signal("player_died")
+
+# Called when player revives
+func _on_player_revived() -> void:
+	# You can handle any special logic here on revival if needed
+	pass

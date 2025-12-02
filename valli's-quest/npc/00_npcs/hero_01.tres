@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="NPCResource" load_steps=4 format=3 uid="uid://c31v55876v5qh"]
+
+[ext_resource type="Texture2D" uid="uid://0vv6xfbtghcs" path="res://npc/sprites/portraits/hero_portrait.png" id="1_fjheh"]
+[ext_resource type="Script" uid="uid://b58jf2kamfwrm" path="res://npc/scripts/npc_resource.gd" id="1_kyg6l"]
+[ext_resource type="Texture2D" uid="uid://d02g5mmq2p0vl" path="res://Player/Sprites/PlayerSprite02.png" id="3_q5y01"]
+
+[resource]
+script = ExtResource("1_kyg6l")
+npcName = "Valli"
+sprite = ExtResource("3_q5y01")
+portrait = ExtResource("1_fjheh")
+metadata/_custom_type_script = "uid://b58jf2kamfwrm"

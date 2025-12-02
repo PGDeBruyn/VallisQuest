@@ -6,6 +6,7 @@ signal item_used(success: bool)
 @export var name: String = ""
 @export_multiline var description: String = ""
 @export var texture: Texture2D
+@export var cost: int = 10             # <-- REQUIRED FOR SHOP
 @export_category("Effects")
 @export var effects: Array[ItemEffect] = []
 
@@ -15,20 +16,18 @@ func can_use() -> bool:
 func use() -> bool:
 	if not can_use():
 		print("Cannot use: no effects")
-		emit_signal("item_used", false)
+		item_used.emit(false)
 		return false
 
 	print("Using item effects, count:", effects.size())
 
-	var index := 0
-	while index < effects.size():
-		var effect = effects[index]
+	for i in effects.size():
+		var effect = effects[i]
 		if effect != null:
-			print("Using effect at index", index, "of type", effect)
+			print("Using effect at index", i, "of type", effect)
 			effect.use()
 		else:
-			print("Effect at index", index, "is null")
-		index += 1
+			print("Effect at index", i, "is null")
 
-	emit_signal("item_used", true)
+	item_used.emit(true)
 	return true

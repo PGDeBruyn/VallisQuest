@@ -1,0 +1,54 @@
+[gd_scene load_steps=7 format=3 uid="uid://cuje2x8idmpmg"]
+
+[ext_resource type="Script" uid="uid://wbjbxp1fbsma" path="res://Interactables/shop/shop.gd" id="1_suo37"]
+[ext_resource type="PackedScene" uid="uid://cpqfny0emd4mt" path="res://npc/npc.tscn" id="2_4ooui"]
+[ext_resource type="PackedScene" uid="uid://b3yno44g4po6i" path="res://Interactables/Dialogue/dialogue_interaction.tscn" id="4_uqyw2"]
+[ext_resource type="Script" uid="uid://yi8cvfh3wtvw" path="res://Interactables/Dialogue/scripts/dialogue_text.gd" id="5_j381n"]
+[ext_resource type="Resource" uid="uid://ddeny28fkg2sr" path="res://npc/00_npcs/npc_02.tres" id="5_suo37"]
+[ext_resource type="Resource" uid="uid://c31v55876v5qh" path="res://npc/00_npcs/hero_01.tres" id="6_7xb3f"]
+
+[node name="Shop" type="Node2D"]
+script = ExtResource("1_suo37")
+
+[node name="Npc" parent="." instance=ExtResource("2_4ooui")]
+position = Vector2(133, 76)
+
+[node name="DialogueInteraction" parent="Npc" instance=ExtResource("4_uqyw2")]
+position = Vector2(-1, -7)
+enabled = true
+
+[node name="DialogueText" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "[wave]Woah[/wave], another traveler! What are you doing here?"
+npcInfo = ExtResource("5_suo37")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText2" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "I'm helping someone look for their brother. Are you Quinto, by chance?"
+npcInfo = ExtResource("6_7xb3f")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText3" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "Yes! I am! Did Andross get worried again?"
+npcInfo = ExtResource("5_suo37")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText4" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "I believe he did. I'm glad you are safe! He'll be happy to know that nothing bad happened."
+npcInfo = ExtResource("6_7xb3f")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText5" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "Yeah, I'm sure he has been worrying nonstop since I entered this place."
+npcInfo = ExtResource("5_suo37")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText6" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("5_j381n")
+text = "I'll go let him know I'm alright once I've finished up what I'm doing here."
+npcInfo = ExtResource("5_suo37")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"

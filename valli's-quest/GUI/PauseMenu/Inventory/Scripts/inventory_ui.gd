@@ -29,8 +29,22 @@ func _updateInventory(focus_pos: int = 0) -> void:
 	for slot in data.slots:
 		var slotUI = INVENTORY_SLOT.instantiate()
 		add_child(slotUI)
+
+		# Assign the slot data
 		slotUI.set_slot_data(slot)
+
+		# --- THE FIX ---
+		# Give each slot a reference to the real pause menu
+		slotUI.pause_menu = PauseMenu
+
+		# Keep focus tracking
 		slotUI.focus_entered.connect(_on_item_focused)
+	
+	await get_tree().process_frame
+
+	if get_child_count() > 0 and focus_pos < get_child_count():
+		get_child(focus_pos).grab_focus()
+
 	
 	# Focus on the desired slot after a frame to ensure it's ready
 	await get_tree().process_frame

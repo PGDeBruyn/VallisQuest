@@ -1,0 +1,62 @@
+[gd_scene load_steps=7 format=3 uid="uid://chhmen673snkd"]
+
+[ext_resource type="Script" uid="uid://wbjbxp1fbsma" path="res://Interactables/shop/shop.gd" id="1_tmcwv"]
+[ext_resource type="PackedScene" uid="uid://cpqfny0emd4mt" path="res://npc/npc.tscn" id="2_m87sq"]
+[ext_resource type="PackedScene" uid="uid://b3yno44g4po6i" path="res://Interactables/Dialogue/dialogue_interaction.tscn" id="3_vxg85"]
+[ext_resource type="Script" uid="uid://yi8cvfh3wtvw" path="res://Interactables/Dialogue/scripts/dialogue_text.gd" id="4_o7qdo"]
+[ext_resource type="Resource" uid="uid://c31v55876v5qh" path="res://npc/00_npcs/hero_01.tres" id="6_m87sq"]
+[ext_resource type="Resource" uid="uid://dxm5enpqev1hl" path="res://npc/00_npcs/npc_01.tres" id="8_s8avr"]
+
+[node name="Shop" type="Node2D"]
+script = ExtResource("1_tmcwv")
+
+[node name="Npc" parent="." instance=ExtResource("2_m87sq")]
+position = Vector2(133, 76)
+npcResource = ExtResource("8_s8avr")
+
+[node name="DialogueInteraction" parent="Npc" instance=ExtResource("3_vxg85")]
+position = Vector2(-1, -7)
+enabled = true
+
+[node name="DialogueText" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "Hey there, stranger! I'm Andross. Can you help me? I'm looking for my brother, Quinto."
+npcInfo = ExtResource("8_s8avr")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText2" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "I'll be happy to help! Any idea where he might be?"
+npcInfo = ExtResource("6_m87sq")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText3" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "Thank you so much for agreeing to help me! I last saw him entering a nearby [b]dungeon[/b]."
+npcInfo = ExtResource("8_s8avr")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText4" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "I would go myself, but there have been more [shake]monsters[/shake] than usual around here."
+npcInfo = ExtResource("8_s8avr")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText5" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "There's a good chance the [b]dungeon[/b] he is exploring has [color=red]locked doors[/color]. Keep an eye out for any [b]keys[/b] lying around!"
+npcInfo = ExtResource("8_s8avr")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText6" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "I'll keep my eye out for a [b]key[/b], then. Don't worry, I'll find him!"
+npcInfo = ExtResource("6_m87sq")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"
+
+[node name="DialogueText7" type="Node" parent="Npc/DialogueInteraction"]
+script = ExtResource("4_o7qdo")
+text = "I hope so...
+Good luck, and be careful!"
+npcInfo = ExtResource("8_s8avr")
+metadata/_custom_type_script = "uid://yi8cvfh3wtvw"

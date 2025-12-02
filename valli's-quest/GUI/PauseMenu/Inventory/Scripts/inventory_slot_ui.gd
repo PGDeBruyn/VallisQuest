@@ -6,6 +6,8 @@ var pause_menu: PauseMenu  # Must be assigned externally
 
 @onready var textureRect: TextureRect = $TextureRect
 @onready var label: Label = $Label
+@onready var item_description: Label = $"../../../ItemDescription"
+
 
 func _ready() -> void:
 	_clearUI()
@@ -19,6 +21,9 @@ func set_slot_data(value: SlotData) -> void:
 func _clearUI() -> void:
 	textureRect.texture = null
 	label.text = ""
+	# Keep focus_mode to allow focus even if empty for consistent navigation
+	focus_mode = Control.FOCUS_ALL
+	modulate = Color(1, 1, 1, 1)  # Reset color
 
 func _updateUI() -> void:
 	if slotData == null or slotData.itemData == null:
@@ -28,22 +33,34 @@ func _updateUI() -> void:
 	textureRect.texture = slotData.itemData.texture
 	label.text = str(slotData.quantity)
 
+	# Always allow focus so player can highlight all slots
+	focus_mode = Control.FOCUS_ALL
+
+	if not slotData.itemData.can_use():
+		# Gray out unusable items visually but keep focusable and clickable (blocked in _on_pressed)
+		#modulate = Color(0.6, 0.6, 0.6, 1)
+		pass
+	else:
+		modulate = Color(1, 1, 1, 1)
+
 # These three functions should be connected via the Godot editor signals panel:
 func _on_focus_entered() -> void:
 	if slotData and slotData.itemData and pause_menu:
-		pause_menu.update_item_description(slotData.itemData.description)
+		pause_menu.updateItemDescription(slotData.itemData.description)
 
 func _on_focus_exited() -> void:
 	if pause_menu:
-		pause_menu.update_item_description("")
+		pause_menu.updateItemDescription("")
 
 func _on_pressed() -> void:
 	print("Slot pressed!")
-	if slotData == null:
-		print("slotData is null")
+	if slotData == null or slotData.itemData == null:
+		print("Invalid slot or item")
 		return
-	if slotData.itemData == null:
-		print("slotData.itemData is null")
+
+	if not slotData.itemData.can_use():
+		print("Item cannot be used")
+		# Optional: Play error sound or show message here
 		return
 
 	var inventory := PlayerManager.INVENTORY_DATA

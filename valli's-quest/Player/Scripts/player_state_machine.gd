@@ -1,3 +1,4 @@
+# PlayerStateMachine.gd
 class_name PlayerStateMachine
 extends Node
 
@@ -23,6 +24,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var nextState = currentState.handleInput(event)
 		_changeState(nextState)
 
+# External initializer called by Player
 func initialize(playerRef: Player) -> void:
 	states.clear()
 	for child in get_children():
@@ -34,19 +36,33 @@ func initialize(playerRef: Player) -> void:
 
 	# Initialize all states with player and state machine references
 	for state in states:
-		state.initState(playerRef, self)
+		# Support old/new state init signatures by calling initState if present
+		if state.has_method("initState"):
+			state.initState(playerRef, self)
+		elif state.has_method("init"):
+			state.init()
 
+	# Start with the first state found (usually Idle)
 	_changeState(states[0])
 	process_mode = Node.PROCESS_MODE_INHERIT
 
+# Public alias used by tutorial code and other states
+func changeState(newState: State) -> void:
+	_changeState(newState)
+
+# Core transition logic
 func _changeState(newState: State) -> void:
 	if newState == null or newState == currentState:
 		return
 
-	# Prevent leaving stun early
-	if currentState is StateStun and currentState.stunTimer < currentState.stunDuration:
-		# Don't switch states until stun finished
-		return
+	# Prevent leaving stun early *except* to go to Death
+	if currentState is StateStun:
+		# Access stun timer/duration to determine if stun still active
+		var stun = currentState as StateStun
+		if stun.stunTimer < stun.stunDuration:
+			# allow early transition *only* if newState is a Death-like state
+			if not (newState is StateDeath):
+				return
 
 	if currentState:
 		currentState.exit()
@@ -54,3 +70,13 @@ func _changeState(newState: State) -> void:
 	previousState = currentState
 	currentState = newState
 	currentState.enter()
+
+# helper: find state by class name first, then by node name
+func findStateByClassOrName(className: String, nodeName: String) -> State:
+	for s in states:
+		if s.get_class() == className:
+			return s
+	for s in states:
+		if s.name == nodeName:
+			return s
+	return null

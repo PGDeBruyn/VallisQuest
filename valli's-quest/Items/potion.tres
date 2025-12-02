@@ -1,12 +1,15 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=7 format=3 uid="uid://d31gfemh13y5t"]
+[gd_resource type="Resource" script_class="ItemData" load_steps=8 format=3 uid="uid://d31gfemh13y5t"]
 
 [ext_resource type="Script" uid="uid://j0wldbk6ari5" path="res://Items/Scripts/resource_item_data.gd" id="1_hw0jr"]
 [ext_resource type="Script" uid="uid://qprdn3m2hg81" path="res://Items/ItemEffects/item_effect.gd" id="1_pw2eo"]
 [ext_resource type="Texture2D" uid="uid://du6tq51y0fwdu" path="res://Items/Sprites/items.png" id="2_5vqjr"]
+[ext_resource type="AudioStream" uid="uid://b0qm684qtmppd" path="res://Items/ItemEffects/hp-up.wav" id="2_pw2eo"]
 [ext_resource type="Script" uid="uid://dp8o7dyl5r7pa" path="res://Items/ItemEffects/item_effect_heal.gd" id="2_yhh2t"]
 
 [sub_resource type="Resource" id="Resource_eu55q"]
 script = ExtResource("2_yhh2t")
+healAmount = 2
+audio = ExtResource("2_pw2eo")
 metadata/_custom_type_script = "uid://dp8o7dyl5r7pa"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_t8xv6"]
@@ -16,7 +19,8 @@ region = Rect2(32, 0, 32, 32)
 [resource]
 script = ExtResource("1_hw0jr")
 name = "Potion"
-description = "A potion used to restore HP"
+description = "A potion used to restore HP."
 texture = SubResource("AtlasTexture_t8xv6")
+cost = 3
 effects = Array[ExtResource("1_pw2eo")]([SubResource("Resource_eu55q")])
 metadata/_custom_type_script = "uid://j0wldbk6ari5"

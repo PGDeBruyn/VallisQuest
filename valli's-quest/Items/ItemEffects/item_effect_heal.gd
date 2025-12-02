@@ -23,7 +23,7 @@ func use() -> void:
 		if player != null:
 			player.heal(action["amount"])
 			if action["audio"] != null:
-				PauseMenu.play_audio(action["audio"])
+				PauseMenu.playAudio(action["audio"])
 		action["applied"] = true
 
 	action["rollback"] = func() -> void:

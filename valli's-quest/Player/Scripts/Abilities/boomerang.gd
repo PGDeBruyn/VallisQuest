@@ -59,12 +59,27 @@ func launch(launch_direction: Vector2) -> void:
 	animation_player.play("boomerang")
 	_play_catch_sound()
 
+@onready var itemMagnet: ItemMagnet = $ItemMagnet
+
 func _catch() -> void:
 	state = State.IDLE
 	visible = false
 	_play_catch_sound()
+
+	if itemMagnet:
+		# Detach and re-enable physics for all following items
+		for item in itemMagnet.followingItems:
+			if item is ItemPickup:
+				itemMagnet.followingItems.erase(item)
+				item.set_physics_process(true)
+				# Reparent back to main scene (adjust path as needed)
+				if item.get_parent() == itemMagnet:
+					itemMagnet.remove_child(item)
+					get_tree().get_root().add_child(item)
+
 	emit_signal("caught")
 	queue_free()
+
 
 func _play_catch_sound() -> void:
 	if catch_sound:

@@ -1,13 +1,14 @@
 extends Node
 class_name GlobalSaveManager
 
+const SAVE_PATH: String = "user://"
+
 @export var saveFileName: String = "save.sav"
-const SAVE_PATH := "user://"
 
-signal game_loaded
-signal game_saved
+signal gameLoaded
+signal gameSaved
 
-var current_save: Dictionary = {
+var currentSave: Dictionary = {
 	"scene_path": "",
 	"player": {
 		"hp": 1,
@@ -20,94 +21,138 @@ var current_save: Dictionary = {
 	"quests": []
 }
 
-func save_game() -> void:
-	_update_player_data()
-	_update_scene_path()
-	_update_item_data()
+# ---------------------------------------------------------
+# SAVE GAME
+# ---------------------------------------------------------
 
-	if current_save["scene_path"] == "" or current_save["scene_path"] == null:
+func save_game() -> void:
+	_updatePlayerData()
+	_updateScenePath()
+	_updateItemData()
+
+	if currentSave["scene_path"] == "" or currentSave["scene_path"] == null:
 		push_error("Cannot save game: scene path is empty!")
 		return
-	
-	var file_path = SAVE_PATH + saveFileName
-	var file = FileAccess.open(file_path, FileAccess.WRITE)
+
+	var filePath: String = SAVE_PATH + saveFileName
+	var file: FileAccess = FileAccess.open(filePath, FileAccess.WRITE)
+
 	if file == null:
-		push_error("Failed to open save file for writing: %s" % file_path)
+		push_error("Failed to open save file for writing: %s" % filePath)
 		return
-	
-	var save_json = JSON.stringify(current_save)
-	file.store_line(save_json)
+
+	var jsonString: String = JSON.stringify(currentSave)
+	file.store_line(jsonString)
 	file.close()
-	emit_signal("game_saved")
+
+	gameSaved.emit()
+
+
+# ---------------------------------------------------------
+# LOAD GAME
+# ---------------------------------------------------------
 
 func load_game() -> void:
-	var file_path = SAVE_PATH + saveFileName
-	if not FileAccess.file_exists(file_path):
-		push_warning("Save file does not exist: %s" % file_path)
+	var filePath: String = SAVE_PATH + saveFileName
+
+	if not FileAccess.file_exists(filePath):
+		push_warning("Save file does not exist: %s" % filePath)
 		return
-	
-	var file = FileAccess.open(file_path, FileAccess.READ)
+
+	var file: FileAccess = FileAccess.open(filePath, FileAccess.READ)
 	if file == null:
-		push_error("Failed to open save file for reading: %s" % file_path)
+		push_error("Failed to open save file for reading: %s" % filePath)
 		return
-	
-	var json_text = file.get_line()
+
+	var jsonText: String = file.get_line()
 	file.close()
-	
-	var json = JSON.new()
-	var error = json.parse(json_text)
-	if error != OK:
+
+	var json := JSON.new()
+	var parseErr: int = json.parse(jsonText)
+
+	if parseErr != OK:
 		push_error("Failed to parse save JSON: %s" % json.get_error_message())
 		return
-	
-	var save_dict: Dictionary = json.get_data()
-	
-	# Defensive copy with fallback to default if keys missing
-	current_save = save_dict if save_dict is Dictionary else current_save
-	
-	if current_save.get("scene_path", "") == "":
+
+	var saveDict: Dictionary = json.get_data()
+
+	if not (saveDict is Dictionary):
+		push_error("Save file data corrupted — not a dictionary.")
+		return
+
+	currentSave = saveDict
+
+	if currentSave.get("scene_path", "") == "":
 		push_error("No valid scene path saved!")
 		return
-	
+
+	# Load the saved scene
 	LevelManager.loadNewLevel(
-		current_save.get("scene_path", ""),
+		currentSave.get("scene_path", ""),
 		"",
 		Vector2.ZERO
 	)
+
 	await LevelManager.level_load_initiated
-	
+
+	# Restore player position
 	PlayerManager.set_player_position(Vector2(
-		current_save["player"].get("posX", 0),
-		current_save["player"].get("posY", 0)
+		currentSave["player"].get("posX", 0.0),
+		currentSave["player"].get("posY", 0.0)
 	))
+
+	# Restore player health
 	PlayerManager.set_health(
-		current_save["player"].get("hp", 1),
-		current_save["player"].get("max_hp", 1)
+		currentSave["player"].get("hp", 1),
+		currentSave["player"].get("max_hp", 1)
 	)
-	PlayerManager.INVENTORY_DATA.parseSaveData(current_save.get("items", []))
-	
+
+	# Restore inventory
+	PlayerManager.INVENTORY_DATA.parseSaveData(
+		currentSave.get("items", [])
+	)
+
 	await LevelManager.level_load_completed
-	emit_signal("game_loaded")
+
+	gameLoaded.emit()
+
+
+# ---------------------------------------------------------
+# PERSISTENCE VALUES
+# ---------------------------------------------------------
 
 func addPersistentValue(value: String) -> void:
 	if not checkPersistentValue(value):
-		current_save["persistence"].append(value)
+		currentSave["persistence"].append(value)
 
 func checkPersistentValue(value: String) -> bool:
-	return current_save.get("persistence", []).has(value)
+	return currentSave.get("persistence", []).has(value)
 
-# --- Private helper methods ---
 
-func _update_player_data() -> void:
-	var p = PlayerManager.player
+# ---------------------------------------------------------
+# PRIVATE UPDATE HELPERS
+# ---------------------------------------------------------
+
+func _updatePlayerData() -> void:
+	var p: Node = PlayerManager.player
+
 	if p:
-		current_save["player"]["hp"] = p.health
-		current_save["player"]["max_hp"] = p.maxHealth
-		current_save["player"]["posX"] = p.global_position.x
-		current_save["player"]["posY"] = p.global_position.y
+		currentSave["player"]["hp"] = p.health
+		currentSave["player"]["max_hp"] = p.maxHealth
+		currentSave["player"]["posX"] = p.global_position.x
+		currentSave["player"]["posY"] = p.global_position.y
 
-func _update_scene_path() -> void:
-	current_save["scene_path"] = LevelManager.currentScenePath
+func _updateScenePath() -> void:
+	currentSave["scene_path"] = LevelManager.currentScenePath
 
-func _update_item_data() -> void:
-	current_save["items"] = PlayerManager.INVENTORY_DATA.getSaveData()
+func _updateItemData() -> void:
+	currentSave["items"] = PlayerManager.INVENTORY_DATA.getSaveData()
+
+func get_save_file() -> FileAccess:
+	var filePath: String = SAVE_PATH + saveFileName
+	
+	if not FileAccess.file_exists(filePath):
+		return null
+	
+	var file := FileAccess.open(filePath, FileAccess.READ)
+	return file

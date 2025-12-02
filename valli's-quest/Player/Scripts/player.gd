@@ -1,9 +1,11 @@
-# player.gd
+# Player.gd
 class_name Player
 extends CharacterBody2D
 
 signal facingChanged(direction: Vector2)
 signal damaged(source: Hurtbox)
+signal died()
+signal revived()
 
 var facing: Vector2 = Vector2.DOWN
 const DIRECTIONS = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
@@ -11,7 +13,8 @@ const DIRECTIONS = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 var health: int = 6
 var maxHealth: int = 6
 var invulnerable: bool = false
-var isAttacking: bool = false   # Used by StateAttack to prevent animation override
+var isAttacking: bool = false
+var isDead: bool = false
 
 @onready var animMain: AnimationPlayer = $AnimationPlayer
 @onready var animEffect: AnimationPlayer = $EffectAnimationPlayer
@@ -21,10 +24,9 @@ var isAttacking: bool = false   # Used by StateAttack to prevent animation overr
 @onready var sfx: AudioStreamPlayer2D = $Audio/AudioStreamPlayer2D
 
 var speed: float = 150.0
-var moveSpeedMultiplier: float = 1.0  # 🔹 Allows states to modify move speed dynamically (used by attacks)
-var externalVelocityOverride = null   # Can be assigned Vector2 or null
-var initialMoveDirection: Vector2 = Vector2.ZERO  # Stores initial direction on movement start
-
+var moveSpeedMultiplier: float = 1.0
+var externalVelocityOverride = null
+var initialMoveDirection: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	PlayerManager.player = self
@@ -33,7 +35,6 @@ func _ready() -> void:
 	_updateHealth(maxHealth)
 	_updateAnimationOnIdle()
 
-
 func _physics_process(_delta: float) -> void:
 	# Apply external velocity override (knockback, stun, etc.)
 	if externalVelocityOverride != null:
@@ -41,11 +42,10 @@ func _physics_process(_delta: float) -> void:
 	else:
 		_getInput()
 
-	# Apply movement speed modifier (used for attacks, slow effects, etc.)
+	# Movement and facing logic
 	if velocity.length() > 0:
 		velocity = velocity.normalized() * speed * moveSpeedMultiplier
 
-		# Determine how many direction buttons are pressed (for facing lock behavior)
 		var numPressed = int(Input.is_action_pressed("left")) + int(Input.is_action_pressed("right")) + int(Input.is_action_pressed("up")) + int(Input.is_action_pressed("down"))
 
 		if numPressed > 1:
@@ -67,11 +67,8 @@ func _physics_process(_delta: float) -> void:
 
 	move_and_slide()
 
-
 func _getInput() -> void:
-	# Returns -1..1 for axes combined into a vector
 	velocity = Input.get_vector("left", "right", "up", "down")
-
 
 func _tryFaceDirection(dir: Vector2) -> void:
 	var best_dir = DIRECTIONS[0]
@@ -87,17 +84,13 @@ func _tryFaceDirection(dir: Vector2) -> void:
 		facingChanged.emit(facing)
 		sprite.scale.x = -1 if facing.x < 0 else 1
 
-
 func _updateAnimationOnMovement() -> void:
 	playStateAnim("walk")
-
 
 func _updateAnimationOnIdle() -> void:
 	playStateAnim("idle")
 
-
 func playStateAnim(state: String) -> void:
-	# Build animation name from state + facing suffix
 	var suffix: String
 	match facing:
 		Vector2.UP:
@@ -110,31 +103,30 @@ func playStateAnim(state: String) -> void:
 	if animMain.current_animation != anim_name:
 		animMain.play(anim_name)
 
-
+# --- Damage handling ---
 func _onDamaged(source: Hurtbox) -> void:
-	if invulnerable:
+	print("Damage received. Invulnerable:", invulnerable, "Dead:", isDead)
+	if invulnerable or isDead:
+		print("Ignoring damage due to invulnerable or dead state")
 		return
-
 	_applyDamage(source.damage)
 	damaged.emit(source)
 
-	if health <= 0:
-		_resetHealth()
-
+	# IMPORTANT: do not auto-reset health here. Let the Stun state detect health <= 0 and route to Death.
+	# (This prevents the instant-refill bug you had before.)
 
 func _applyDamage(amount: int) -> void:
 	_updateHealth(health - amount)
-
-
-func _resetHealth() -> void:
-	_updateHealth(maxHealth)
-
 
 func _updateHealth(newVal: int) -> void:
 	print("updating HP")
 	health = clampi(newVal, 0, maxHealth)
 	PlayerHud.adjustHP(health, maxHealth)
 
+	# Emit died signal if health drops to zero and player is not already dead
+	if health <= 0 and not isDead:
+		isDead = true
+		emit_signal("died")
 
 func grantInvulnerability(time: float = 1.0) -> void:
 	invulnerable = true
@@ -142,18 +134,41 @@ func grantInvulnerability(time: float = 1.0) -> void:
 	await timer.timeout
 	invulnerable = false
 
-
+# External velocity helpers (used by stun/knockback)
 func setExternalVelocity(vel: Vector2) -> void:
 	externalVelocityOverride = vel
-
 
 func clearExternalVelocity() -> void:
 	externalVelocityOverride = null
 
+# Utility: set health and max together
 func setHealth(newHealth: int, newMaxHealth: int) -> void:
 	_updateHealth(newHealth)
 	maxHealth = newMaxHealth
 
 func heal(amount: int) -> void:
-	var newHealth = health + amount
-	_updateHealth(newHealth)
+	_updateHealth(health + amount)
+
+# Called when reviving from Death (respawn)
+func revivePlayer() -> void:
+	_updateHealth(maxHealth)
+
+	# Reset dead state so player can take damage again
+	isDead = false
+
+	# Give a small invuln window after revive
+	grantInvulnerability(1.0)
+
+	emit_signal("revived")
+
+	# Return control to Idle (state names depend on your scene tree). We attempt to find the Idle state:
+	var idleState := fsm.findStateByClassOrName("StateIdle", "Idle")
+	if idleState:
+		fsm.changeState(idleState)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("test"):
+		_updateHealth(-99)
+		damaged.emit(%AttackHurtBox)
+	pass

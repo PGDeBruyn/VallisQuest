@@ -1,9 +1,11 @@
-[gd_scene load_steps=49 format=3 uid="uid://1yd7i3anfcus"]
+[gd_scene load_steps=42 format=3 uid="uid://1yd7i3anfcus"]
 
 [ext_resource type="PackedScene" uid="uid://cwmdw6v5d047e" path="res://GeneralNodes/Hurtbox/hurt_box.tscn" id="1_77nmr"]
 [ext_resource type="PackedScene" uid="uid://dsaqq0iiu6xb5" path="res://GeneralNodes/Hitbox/hit_box.tscn" id="2_f3wku"]
 [ext_resource type="Texture2D" uid="uid://cs74i4ffjt6er" path="res://Player/Sprites/Shadow.png" id="3_lvhkj"]
 [ext_resource type="Texture2D" uid="uid://c2patta6imwo6" path="res://Enemies/Goblin/goblin.png" id="4_e6gxc"]
+[ext_resource type="AudioStream" uid="uid://dksgkep4pjwt0" path="res://Enemies/Slime/hit_01.wav" id="5_r3i0u"]
+[ext_resource type="AudioStream" uid="uid://d1pdlao4yi560" path="res://Enemies/Slime/hit_00.wav" id="6_p257j"]
 [ext_resource type="Script" uid="uid://crhp375ghfg8a" path="res://Enemies/Scripts/enemy_state_machine.gd" id="7_q0lai"]
 [ext_resource type="Script" uid="uid://bljteoiimrtff" path="res://Enemies/Scripts/States/enemy_state_idle.gd" id="8_0n355"]
 [ext_resource type="Script" uid="uid://bie5rrnw0lejx" path="res://Enemies/Scripts/States/enemy_state_wander.gd" id="9_68gig"]
@@ -72,6 +74,18 @@ tracks/3/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Vector2(0, 11)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("HurtBox/CollisionShape2D:disabled")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
 }
 
 [sub_resource type="Animation" id="Animation_egddf"]
@@ -164,12 +178,6 @@ tracks/1/keys = {
 "values": [Vector2(0, -4), Vector2(0, -4), Vector2(0, -10), Vector2(0, -4)]
 }
 
-[sub_resource type="Resource" id="Resource_xeo0c"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
-
-[sub_resource type="Resource" id="Resource_e6gxc"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_00.wav"
-
 [sub_resource type="Animation" id="Animation_yynal"]
 resource_name = "destroy_down"
 step = 0.05
@@ -207,7 +215,7 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_xeo0c")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
@@ -222,7 +230,7 @@ tracks/3/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_e6gxc")
+"stream": ExtResource("6_p257j")
 }],
 "times": PackedFloat32Array(0.05)
 }
@@ -249,12 +257,18 @@ tracks/5/keys = {
 "update": 0,
 "values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
-
-[sub_resource type="Resource" id="Resource_egddf"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
-
-[sub_resource type="Resource" id="Resource_3xcr1"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_00.wav"
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("HurtBox/CollisionShape2D:disabled")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_2qn7y"]
 resource_name = "destroy_side"
@@ -293,7 +307,7 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_egddf")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
@@ -308,7 +322,7 @@ tracks/3/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_3xcr1")
+"stream": ExtResource("6_p257j")
 }],
 "times": PackedFloat32Array(0.05)
 }
@@ -335,12 +349,18 @@ tracks/5/keys = {
 "update": 0,
 "values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
-
-[sub_resource type="Resource" id="Resource_fuxiv"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
-
-[sub_resource type="Resource" id="Resource_hvprn"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_00.wav"
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("HurtBox/CollisionShape2D:disabled")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 
 [sub_resource type="Animation" id="Animation_pydiu"]
 resource_name = "destroy_up"
@@ -379,7 +399,7 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_fuxiv")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
@@ -394,7 +414,7 @@ tracks/3/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_hvprn")
+"stream": ExtResource("6_p257j")
 }],
 "times": PackedFloat32Array(0.05)
 }
@@ -420,6 +440,18 @@ tracks/5/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
 "values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("HurtBox/CollisionShape2D:disabled")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
 }
 
 [sub_resource type="Animation" id="Animation_wwfkb"]
@@ -470,9 +502,6 @@ tracks/0/keys = {
 "values": [4, 5]
 }
 
-[sub_resource type="Resource" id="Resource_r3i0u"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
-
 [sub_resource type="Animation" id="Animation_t1krp"]
 resource_name = "stun_down"
 length = 0.3
@@ -511,14 +540,11 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_r3i0u")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
 tracks/2/use_blend = true
-
-[sub_resource type="Resource" id="Resource_p257j"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
 
 [sub_resource type="Animation" id="Animation_vjyi2"]
 resource_name = "stun_side"
@@ -558,14 +584,11 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_p257j")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
 tracks/2/use_blend = true
-
-[sub_resource type="Resource" id="Resource_l2k1h"]
-metadata/__load_path__ = "res://Enemies/Goblin/hit_01.wav"
 
 [sub_resource type="Animation" id="Animation_nsi17"]
 resource_name = "stun_up"
@@ -605,7 +628,7 @@ tracks/2/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": SubResource("Resource_l2k1h")
+"stream": ExtResource("5_r3i0u")
 }],
 "times": PackedFloat32Array(0)
 }
