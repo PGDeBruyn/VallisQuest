@@ -167,8 +167,8 @@ func revivePlayer() -> void:
 		fsm.changeState(idleState)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("test"):
-		_updateHealth(-99)
-		damaged.emit(%AttackHurtBox)
-	pass
+#func _unhandled_input(event: InputEvent) -> void:
+	#if event.is_action_pressed("test"):
+		#_updateHealth(-99)
+		#damaged.emit(%AttackHurtBox)
+	#pass
