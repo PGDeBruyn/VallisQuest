@@ -20,6 +20,6 @@ script = ExtResource("2_ovoyb")
 name = "Apple"
 description = "Tastes delicious!"
 texture = SubResource("AtlasTexture_nido0")
-cost = 0
+cost = 1
 effects = Array[ExtResource("1_xwhp1")]([SubResource("Resource_0m7an")])
 metadata/_custom_type_script = "uid://j0wldbk6ari5"
