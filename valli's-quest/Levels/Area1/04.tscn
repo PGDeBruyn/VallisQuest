@@ -78,14 +78,17 @@ script = ExtResource("10_actrm")
 [node name="Goblin" parent="EnemyCounter" instance=ExtResource("15_0pwrj")]
 position = Vector2(193, 227)
 script = ExtResource("10_actrm")
+maxHp = 6
 
 [node name="Goblin2" parent="EnemyCounter" instance=ExtResource("15_0pwrj")]
 position = Vector2(362, 191)
 script = ExtResource("10_actrm")
+maxHp = 6
 
 [node name="Goblin3" parent="EnemyCounter" instance=ExtResource("15_0pwrj")]
 position = Vector2(520, 232)
 script = ExtResource("10_actrm")
+maxHp = 6
 
 [node name="Shop" parent="." instance=ExtResource("18_xmmjn")]
 position = Vector2(290, -65)

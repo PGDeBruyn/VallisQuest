@@ -70,7 +70,9 @@ script = ExtResource("13_8i80t")
 [node name="Goblin" parent="." instance=ExtResource("15_tajdo")]
 position = Vector2(589, 116)
 script = ExtResource("13_8i80t")
+maxHp = 6
 
 [node name="Goblin2" parent="." instance=ExtResource("15_tajdo")]
 position = Vector2(213, 206)
 script = ExtResource("13_8i80t")
+maxHp = 6
