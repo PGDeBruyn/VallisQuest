@@ -8,24 +8,28 @@ enum DoorState { CLOSED, OPEN }
 var state: DoorState = DoorState.CLOSED
 
 func _ready() -> void:
+	# Synchronize animation with current door state on ready
 	_sync_animation()
 
-# -- Public API ---------------------------------------------------------------
-
 func openDoor() -> void:
+	# Open the door by changing its state to OPEN
 	_change_state(DoorState.OPEN)
 
 func closeDoor() -> void:
+	# Close the door by changing its state to CLOSED
 	_change_state(DoorState.CLOSED)
 
 func _change_state(target: DoorState) -> void:
+	# Change door state only if different from current
 	if target == state:
-		return  # no-op if already in this state
+		return
 	
 	state = target
+	# Update animation to match new state
 	_sync_animation()
 
 func _sync_animation() -> void:
+	# Play animation based on door state
 	match state:
 		DoorState.OPEN:
 			_play_anim("open_door")
@@ -33,13 +37,6 @@ func _sync_animation() -> void:
 			_play_anim("close_door")
 
 func _play_anim(anim: String) -> void:
+	# Play animation if it exists
 	if animator.has_animation(anim):
 		animator.play(anim)
-
-
-func _on_pressure_plate_activated() -> void:
-	pass # Replace with function body.
-
-
-func _on_pressure_plate_deactivated() -> void:
-	pass # Replace with function body.

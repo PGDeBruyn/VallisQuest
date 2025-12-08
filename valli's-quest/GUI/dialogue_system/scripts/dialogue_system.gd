@@ -31,6 +31,7 @@ var waitingForChoice: bool = false
 @onready var audioStreamPlayer: AudioStreamPlayer = $DialogueUI/AudioStreamPlayer
 @onready var choiceOptions: VBoxContainer = $DialogueUI/VBoxContainer
 
+# Initializes the dialogue system and hides dialogue UI on start.
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		if get_viewport() is Window:
@@ -39,6 +40,7 @@ func _ready() -> void:
 	timer.timeout.connect(_onTimerTimeout)
 	hideDialogue()
 
+# Handles input for advancing dialogue or skipping text.
 func _unhandled_input(event: InputEvent) -> void:
 	if not isActive:
 		return
@@ -49,7 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			textInProgress = false
 			_showDialogueButtonIndicator(true)
 			return
-		# We *skip* input if waiting for choice because buttons handle it:
+		# Skip input if waiting for player choice buttons
 		if waitingForChoice:
 			return
 
@@ -60,10 +62,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			print("hiding dialogue")
 			hideDialogue()
 
+# Starts showing a sequence of dialogue items and pauses the game.
 func showDialogue(items: Array[DialogueItem]) -> void:
 	isActive = true
-	isDialogueRunning = true  # Dialogue actually started
-	dialogue_started.emit()   # Emit signal when dialogue starts
+	isDialogueRunning = true
+	dialogue_started.emit()
 	dialogueUI.visible = true
 	dialogueUI.process_mode = Node.PROCESS_MODE_ALWAYS
 	dialogueItems = items
@@ -72,6 +75,7 @@ func showDialogue(items: Array[DialogueItem]) -> void:
 	await get_tree().process_frame
 	startDialogue()
 
+# Hides dialogue UI, unpauses the game if appropriate, and emits finished signal.
 func hideDialogue() -> void:
 	isActive = false
 	isDialogueRunning = false
@@ -80,20 +84,19 @@ func hideDialogue() -> void:
 	dialogueUI.visible = false
 	dialogueUI.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# Only unpause if shop is NOT active
+	# Only unpause if shop menu is not active
 	if not ShopMenu.isActive:
 		get_tree().paused = false
 	
 	finished.emit()
 
-
-
+# Begins the current dialogue item, handles text or choice types.
 func startDialogue() -> void:
 	waitingForChoice = false
 	_showDialogueButtonIndicator(false)
 
 	if dialogueItems.size() == 0:
-		return  # Exit early if no dialogue items to show
+		return
 
 	var d: DialogueItem = dialogueItems[dialogueItemIndex]
 	if d is DialogueText:
@@ -101,6 +104,7 @@ func startDialogue() -> void:
 	elif d is DialogueChoice:
 		_setDialogueChoice(d as DialogueChoice)
 
+# Sets up dialogue text display and starts the text reveal timer.
 func _setDialogueText(d: DialogueText) -> void:
 	content.text = d.text
 	if d.npcInfo:
@@ -117,6 +121,7 @@ func _setDialogueText(d: DialogueText) -> void:
 	textInProgress = true
 	_startTimer()
 
+# Shows or hides the "NEXT"/"END" indicator during dialogue.
 func _showDialogueButtonIndicator(isVisible: bool) -> void:
 	dialogueProgress.visible = isVisible
 	
@@ -125,6 +130,7 @@ func _showDialogueButtonIndicator(isVisible: bool) -> void:
 	else:
 		dialogueProgressLabel.text = "END"
 
+# Starts the timer for text reveal speed, adjusting for punctuation pauses.
 func _startTimer() -> void:
 	timer.wait_time = textSpeed
 	var c = plainText[content.visible_characters - 1]
@@ -134,6 +140,7 @@ func _startTimer() -> void:
 		timer.wait_time *= 2
 	timer.start()
 
+# Called when timer times out; reveals next character or shows indicator when done.
 func _onTimerTimeout() -> void:
 	content.visible_characters += 1
 	if content.visible_characters <= textLength:
@@ -143,15 +150,16 @@ func _onTimerTimeout() -> void:
 		_showDialogueButtonIndicator(true)
 		textInProgress = false
 
+# Sets up UI for dialogue choices and waits for player selection.
 func _setDialogueChoice(d: DialogueChoice) -> void:
 	choiceOptions.visible = true
 	waitingForChoice = true
 
-	# Clear old choices
+	# Clear existing choice buttons
 	for child in choiceOptions.get_children():
 		child.queue_free()
 
-	# Create new buttons
+	# Create buttons for each branch choice
 	for i in range(d.get_branches().size()):
 		var branch = d.get_branches()[i]
 		var newChoice = Button.new()
@@ -160,33 +168,30 @@ func _setDialogueChoice(d: DialogueChoice) -> void:
 		choiceOptions.add_child(newChoice)
 		newChoice.pressed.connect(_onDialogueChoiceSelected.bind(branch))
 
-	# Wait two frames so layout stabilizes
+	# Wait a couple frames for UI to stabilize
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# Ensure a button is focused
+	# Ensure first button is focused for keyboard/gamepad navigation
 	if choiceOptions.get_child_count() > 0:
 		choiceOptions.get_child(0).grab_focus()
 
-	# Failsafe: if nothing got focused, focus it now
+	# Failsafe to ensure some button is focused
 	await get_tree().process_frame
 	if not get_viewport().gui_get_focus_owner():
 		choiceOptions.get_child(0).grab_focus()
 
-
+# Handles player selection of a dialogue choice and continues the dialogue.
 func _onDialogueChoiceSelected(branch: DialogueBranch) -> void:
-	# Inform the parent DialogueChoice so signals fire
 	var parentChoice := branch.get_parent()
 	if parentChoice and parentChoice.has_method("chooseBranch"):
 		parentChoice.chooseBranch(branch)
 
-	# Immediately continue dialogue with branch items without requiring extra input
 	choiceOptions.visible = false
 	waitingForChoice = false
 	dialogueItems = branch.getItems()
 	dialogueItemIndex = 0
 
-	# Ensure UI is visible and game is paused
 	dialogueUI.visible = true
 	get_tree().paused = true
 	
@@ -194,5 +199,3 @@ func _onDialogueChoiceSelected(branch: DialogueBranch) -> void:
 		hideDialogue()
 	else:
 		startDialogue()
-
-	#startDialogue()

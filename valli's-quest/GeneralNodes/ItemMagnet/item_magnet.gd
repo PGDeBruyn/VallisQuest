@@ -9,14 +9,17 @@ extends Area2D
 var attractedItems := {}
 var followingItems := []
 
+# Connects area_entered signal on ready.
 func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 
+# Starts attracting item when it enters the magnet area.
 func _on_area_entered(area: Area2D) -> void:
 	var parent = area.get_parent()
 	if parent is ItemPickup and not attractedItems.has(parent) and not followingItems.has(parent):
 		_start_attracting(parent)
 
+# Initiates tween to move item towards the magnet.
 func _start_attracting(item: ItemPickup) -> void:
 	item.set_physics_process(false)
 
@@ -35,26 +38,24 @@ func _start_attracting(item: ItemPickup) -> void:
 	if playMagnetAudio and attractedItems.size() == 1:
 		audio.play()
 
+# Finalizes attraction and adds item to following list.
 func _on_item_attracted(item: ItemPickup) -> void:
 	if attractedItems.has(item):
 		attractedItems.erase(item)
 
 	if is_instance_valid(item):
 		item.global_position = global_position
-		# Add item to continuous following list
 		if not followingItems.has(item):
 			followingItems.append(item)
 
+# Updates positions of all following items each frame.
 func _process(_delta: float) -> void:
-	# Update all following items to current magnet position every frame
 	for item in followingItems:
 		if is_instance_valid(item):
-			# Optional: Smooth follow using lerp
 			item.global_position = global_position
 		else:
 			followingItems.erase(item)
 
-	# Clean up invalid attractedItems just in case
 	for item in attractedItems.keys():
 		if not is_instance_valid(item):
 			attractedItems.erase(item)

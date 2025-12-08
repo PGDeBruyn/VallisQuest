@@ -5,11 +5,15 @@ extends Resource
 
 signal inventory_changed
 
+# Called on creation, connects signals for existing slots
 func _init() -> void:
 	connectSlots()
 
+# Adds an item to inventory; tries stacking first, then empty slot
+# Returns true if item added successfully, false if inventory full
 func addItem(item: ItemData, count: int = 1) -> bool:
 	print("Adding item: ", item, " count: ", count)
+	# Try stacking existing slots with same item
 	for s in slots:
 		if s != null and s.itemData == item:
 			s.quantity += count
@@ -17,6 +21,7 @@ func addItem(item: ItemData, count: int = 1) -> bool:
 			emit_signal("inventory_changed")
 			return true
 	
+	# Try to add new slot if empty slot found
 	for i in range(slots.size()):
 		if slots[i] == null:
 			var newSlot = SlotData.new()
@@ -31,12 +36,13 @@ func addItem(item: ItemData, count: int = 1) -> bool:
 	print("Inventory full. Cannot add item.")
 	return false
 
-
+# Connects the changed signal on all existing non-null slots
 func connectSlots() -> void:
 	for s in slots:
 		if s != null:
 			s.changed.connect(slotChanged)
 
+# Called when a slot changes; removes slots with zero quantity and emits signal
 func slotChanged() -> void:
 	for s in slots:
 		if s != null:
@@ -46,12 +52,14 @@ func slotChanged() -> void:
 				slots[index] = null
 				emit_signal("inventory_changed")
 
+# Returns an array of dictionaries suitable for saving the inventory state
 func getSaveData() -> Array:
 	var itemSave: Array = []
 	for s in slots:
 		itemSave.append(itemToSave(s))
 	return itemSave
 
+# Converts a slot to a dictionary for saving
 func itemToSave(slot: SlotData) -> Dictionary:
 	var result: Dictionary = {"item": "", "quantity": 0}
 	if slot != null:
@@ -60,6 +68,7 @@ func itemToSave(slot: SlotData) -> Dictionary:
 			result["item"] = slot.itemData.resource_path
 	return result
 
+# Loads inventory data from a saved array of dictionaries
 func parseSaveData(saveData: Array) -> void:
 	var size: int = slots.size()
 	slots.clear()
@@ -71,6 +80,7 @@ func parseSaveData(saveData: Array) -> void:
 
 	connectSlots()
 
+# Creates a SlotData from a save dictionary; returns null if invalid
 func itemFromSave(saveObject: Dictionary) -> SlotData:
 	if not saveObject.has("item") or saveObject["item"] == "":
 		return null
@@ -84,6 +94,7 @@ func itemFromSave(saveObject: Dictionary) -> SlotData:
 	slot.quantity = int(saveObject.get("quantity", 0))
 	return slot
 
+# Uses a specified number of items; returns true if used successfully, false otherwise
 func useItem(item: ItemData, count: int = 1) -> bool:
 	if item == null:
 		return false
@@ -96,7 +107,7 @@ func useItem(item: ItemData, count: int = 1) -> bool:
 			if slot.itemData.resource_path == itemPath:
 				var used: int = min(slot.quantity, remaining)
 
-				slot.itemData.use()  # Call item effect
+				slot.itemData.use()  # Trigger the item's effect
 				slot.quantity -= used
 				remaining -= used
 
@@ -108,9 +119,10 @@ func useItem(item: ItemData, count: int = 1) -> bool:
 					emit_signal("inventory_changed")
 					return true
 
-	# Not enough quantity found
+	# Not enough quantity available to fulfill use request
 	return false
 
+# Returns the total quantity held of the specified item across all slots
 func get_item_held_qty(item: ItemData) -> int:
 	if item == null:
 		return 0

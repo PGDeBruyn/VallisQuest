@@ -34,13 +34,8 @@ func _initializeLevel() -> void:
 	# Start background music safely
 	if AudioManager and backgroundMusic:
 		AudioManager.playMusic(backgroundMusic)
-
 	initialized = true
 
-
-# ------------------------------
-# HANDLERS
-# ------------------------------
 
 func _onLevelLoadInitiated() -> void:
 	# When a new level is being loaded, this one cleans itself up
@@ -48,10 +43,6 @@ func _onLevelLoadInitiated() -> void:
 		PlayerManager.unparent_player()
 	queue_free()
 
-
-# ------------------------------
-# INTERNAL HELPERS
-# ------------------------------
 
 func _reparentPlayerToLevel() -> void:
 	# Ensure player exists before reparenting

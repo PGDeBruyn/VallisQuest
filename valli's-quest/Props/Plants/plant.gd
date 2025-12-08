@@ -13,5 +13,5 @@ func _enter_tree() -> void:
 	)
 
 func _destroy() -> void:
-	# You could add effects or drops here in future
+	# Could add drops here if I wanted
 	queue_free()

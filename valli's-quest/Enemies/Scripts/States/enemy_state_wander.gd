@@ -1,4 +1,3 @@
-# EnemyStateWander.gd
 class_name EnemyStateWander
 extends EnemyState
 
@@ -17,10 +16,12 @@ var totalCycles: int = 0
 var direction: Vector2
 var nextState: EnemyState = null
 
+# Resolves nextState from the provided node path.
 func _ready() -> void:
 	if nextStatePath != null and nextStatePath != NodePath(""):
 		nextState = get_node_or_null(nextStatePath)
 
+# Initializes enemy and state machine references, sets up timer.
 func init(_enemy: Enemy, _stateMachine: EnemyStateMachine) -> void:
 	enemy = _enemy
 	stateMachine = _stateMachine
@@ -31,16 +32,19 @@ func init(_enemy: Enemy, _stateMachine: EnemyStateMachine) -> void:
 		enemy.add_child(timer)
 		timer.connect("timeout", Callable(self, "_on_cycle_complete"))
 
+# Starts wandering with randomized cycle count.
 func enter() -> void:
 	totalCycles = randi_range(minCycles, maxCycles)
 	currentCycle = 0
 	_start_cycle()
 
+# Stops wandering and resets velocity.
 func exit() -> void:
 	if timer and timer.is_stopped() == false:
 		timer.stop()
 	enemy.velocity = Vector2.ZERO
 
+# Starts a single wandering movement cycle in a random direction.
 func _start_cycle() -> void:
 	var directions = [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]
 	direction = directions[randi() % directions.size()]
@@ -50,6 +54,7 @@ func _start_cycle() -> void:
 	timer.wait_time = cycleDuration
 	timer.start()
 
+# Called when a wander cycle completes; starts next or changes state.
 func _on_cycle_complete() -> void:
 	currentCycle += 1
 	if currentCycle < totalCycles:
@@ -58,8 +63,10 @@ func _on_cycle_complete() -> void:
 		if nextState:
 			stateMachine.changeState(nextState)
 
+# No additional processing during wander.
 func process(_delta: float) -> EnemyState:
 	return null
 
+# No physics processing needed during wander.
 func physics(_delta: float) -> EnemyState:
 	return null

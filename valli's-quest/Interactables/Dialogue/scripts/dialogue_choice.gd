@@ -9,54 +9,39 @@ var _branches: Array[DialogueBranch] = []
 var _initialized := false
 
 func _ready() -> void:
+	# Initialize branches unless in editor preview mode
 	if Engine.is_editor_hint():
 		return
 	_initChoice()
 
-
-## ------------------------------------------------------------------
-## INITIALIZATION
-## ------------------------------------------------------------------
-
 func _initChoice() -> void:
+	# Initialize branch cache once
 	if _initialized:
 		return
 	_refreshBranches()
 	_initialized = true
 
-
-## ------------------------------------------------------------------
-## PUBLIC ACCESS
-## ------------------------------------------------------------------
-
 func get_branches() -> Array[DialogueBranch]:
+	# Return cached branches, initializing if needed
 	_initChoice()
 	return _branches
 
 
-# NEW — required for branch selection events
 func chooseBranch(branch: DialogueBranch) -> void:
+	# Emit signals for branch selection
 	branch.selected.emit()
 	branchSelected.emit(branch)
 
-
-## ------------------------------------------------------------------
-## BRANCH CACHE
-## ------------------------------------------------------------------
-
 func _refreshBranches() -> void:
+	# Cache all child DialogueBranch nodes
 	var result: Array[DialogueBranch] = []
 	for child in get_children():
 		if child is DialogueBranch:
 			result.append(child)
 	_branches = result
 
-
-## ------------------------------------------------------------------
-## EDITOR FEEDBACK
-## ------------------------------------------------------------------
-
 func _get_configuration_warnings() -> PackedStringArray:
+	# Provide editor warnings for invalid setup
 	if Engine.is_editor_hint():
 		_refreshBranches()
 
@@ -65,5 +50,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 	return []
 
 func _notification(what: int) -> void:
+	# Refresh branches when child order changes in editor
 	if what == NOTIFICATION_CHILD_ORDER_CHANGED and Engine.is_editor_hint():
 		_refreshBranches()

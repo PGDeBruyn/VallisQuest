@@ -21,10 +21,7 @@ var currentSave: Dictionary = {
 	"quests": []
 }
 
-# ---------------------------------------------------------
-# SAVE GAME
-# ---------------------------------------------------------
-
+# Saves all game data to a JSON file
 func save_game() -> void:
 	_updatePlayerData()
 	_updateScenePath()
@@ -47,11 +44,7 @@ func save_game() -> void:
 
 	gameSaved.emit()
 
-
-# ---------------------------------------------------------
-# LOAD GAME
-# ---------------------------------------------------------
-
+# Loads all game data from a JSON file
 func load_game() -> void:
 	var filePath: String = SAVE_PATH + saveFileName
 
@@ -86,7 +79,6 @@ func load_game() -> void:
 		push_error("No valid scene path saved!")
 		return
 
-	# Load the saved scene
 	LevelManager.loadNewLevel(
 		currentSave.get("scene_path", ""),
 		"",
@@ -95,19 +87,16 @@ func load_game() -> void:
 
 	await LevelManager.level_load_initiated
 
-	# Restore player position
 	PlayerManager.set_player_position(Vector2(
 		currentSave["player"].get("posX", 0.0),
 		currentSave["player"].get("posY", 0.0)
 	))
 
-	# Restore player health
 	PlayerManager.set_health(
 		currentSave["player"].get("hp", 1),
 		currentSave["player"].get("max_hp", 1)
 	)
 
-	# Restore inventory
 	PlayerManager.INVENTORY_DATA.parseSaveData(
 		currentSave.get("items", [])
 	)
@@ -116,23 +105,16 @@ func load_game() -> void:
 
 	gameLoaded.emit()
 
-
-# ---------------------------------------------------------
-# PERSISTENCE VALUES
-# ---------------------------------------------------------
-
+# Adds a persistent gameplay flag if it isn’t already present
 func addPersistentValue(value: String) -> void:
 	if not checkPersistentValue(value):
 		currentSave["persistence"].append(value)
 
+# Checks whether a persistent gameplay flag exists
 func checkPersistentValue(value: String) -> bool:
 	return currentSave.get("persistence", []).has(value)
 
-
-# ---------------------------------------------------------
-# PRIVATE UPDATE HELPERS
-# ---------------------------------------------------------
-
+# Updates the currentSave dictionary with player stats and position
 func _updatePlayerData() -> void:
 	var p: Node = PlayerManager.player
 
@@ -142,12 +124,15 @@ func _updatePlayerData() -> void:
 		currentSave["player"]["posX"] = p.global_position.x
 		currentSave["player"]["posY"] = p.global_position.y
 
+# Stores the current scene path into the save dictionary
 func _updateScenePath() -> void:
 	currentSave["scene_path"] = LevelManager.currentScenePath
 
+# Stores inventory data into the save dictionary
 func _updateItemData() -> void:
 	currentSave["items"] = PlayerManager.INVENTORY_DATA.getSaveData()
 
+# Retrieves the save file if it exists
 func get_save_file() -> FileAccess:
 	var filePath: String = SAVE_PATH + saveFileName
 	

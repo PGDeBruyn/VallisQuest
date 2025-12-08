@@ -23,34 +23,39 @@ var nextLevel: String
 var canTransition: bool = false
 
 func _ready() -> void:
+	# Editor setup: update collision shape and optionally snap position to grid
 	if Engine.is_editor_hint():
 		_updateCollisionArea()
 		if snapToGrid:
 			_snapToGrid()
 		return
 
+	# Gameplay setup: disable monitoring initially and update collision shape
 	monitoring = false
 	_updateCollisionArea()
 
+	# Position player if this transition is the target after level load
 	if name == LevelManager.targetTransition:
 		var safeOffset := _getSafeSpawnOffset()
 		var newPos = global_position + LevelManager.positionOffset + safeOffset
 		print("[LevelTransition] Setting player position to safe offset:", newPos)
 		PlayerManager.set_player_position(newPos)
-		await get_tree().process_frame  # Wait a frame to avoid immediate collision
+		await get_tree().process_frame  # Delay one frame to avoid immediate collision
 
 	monitoring = true
 	canTransition = false
 	body_entered.connect(_onBodyEntered)
 
-	# Increased cooldown to 0.5 seconds for safety
+	# Delay enabling transitions to prevent instant retriggering
 	get_tree().create_timer(0.5).connect("timeout", Callable(self, "_enableTransition"))
 
 func _enableTransition() -> void:
+	# Allow the transition to trigger after cooldown
 	canTransition = true
 	print("[LevelTransition] Transitions enabled on:", name)
 
 func _onBodyEntered(body: Node) -> void:
+	# Ignore if transitions are not enabled or if globally ignored
 	if not canTransition:
 		return
 
@@ -58,11 +63,12 @@ func _onBodyEntered(body: Node) -> void:
 		print("[LevelTransition] Ignoring transition due to LevelManager flag:", name)
 		return
 
-	# Prevent backtracking by ignoring the transition the player just came from
+	# Prevent backtracking through the previous transition
 	if name == LevelManager.previousTransitionName:
 		print("[LevelTransition] Ignoring backtracking on transition:", name)
 		return
 
+	# Only react if the player entered
 	if body.name != "Player":
 		return
 
@@ -71,6 +77,7 @@ func _onBodyEntered(body: Node) -> void:
 	LevelManager.loadNewLevel(nextLevel, targetTransitionName, offset)
 
 func _getSafeSpawnOffset() -> Vector2:
+	# Provides a safe offset vector based on the side of the transition to position the player
 	var safeOffset := Vector2.ZERO
 	match side:
 		Side.LEFT:
@@ -84,6 +91,7 @@ func _getSafeSpawnOffset() -> Vector2:
 	return safeOffset
 
 func _calculateOffset() -> Vector2:
+	# Calculates the offset to apply when loading the next level, optionally centering the player
 	var offset := Vector2.ZERO
 	var player := PlayerManager.player
 	if player == null:
@@ -102,6 +110,7 @@ func _calculateOffset() -> Vector2:
 	return offset
 
 func _updateCollisionArea() -> void:
+	# Updates the size and position of the collision shape based on the transition side and size
 	if shape == null:
 		return
 
@@ -127,17 +136,21 @@ func _updateCollisionArea() -> void:
 	shape.position = rectOffset
 
 func _snapToGrid() -> void:
+	# Snaps the node's position to the configured grid size
 	position = position.snapped(Vector2(gridSize, gridSize))
 
 func setSide(value):
+	# Setter for the side property, updates collision area accordingly
 	side = value
 	_updateCollisionArea()
 
 func setSize(value):
+	# Setter for the size property, updates collision area accordingly
 	size = value
 	_updateCollisionArea()
 
 func setSnapToGrid(value):
+	# Setter for snapToGrid property, snaps to grid if enabled
 	snapToGrid = value
 	if snapToGrid:
 		_snapToGrid()

@@ -90,6 +90,7 @@ offset_right = 24.0
 offset_bottom = 105.0
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 10
+text = "test item description"
 horizontal_alignment = 1
 autowrap_mode = 2
 

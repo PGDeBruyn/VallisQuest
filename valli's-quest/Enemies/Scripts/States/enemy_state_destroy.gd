@@ -1,4 +1,3 @@
-# EnemyStateDestroy.gd
 class_name EnemyStateDestroy
 extends EnemyState
 
@@ -16,12 +15,14 @@ var damagePosition: Vector2 = Vector2.ZERO
 var direction: Vector2 = Vector2.ZERO
 var isDestroying: bool = false
 
+# Initializes references and connects to the destruction signal.
 func init(_enemy: Enemy, _stateMachine: EnemyStateMachine) -> void:
 	enemy = _enemy
 	stateMachine = _stateMachine
 	if not enemy.enemyDestroyed.is_connected(onEnemyDestroyed):
 		enemy.enemyDestroyed.connect(onEnemyDestroyed)
 
+# Prepares destruction logic, sets knockback, animation, and spawns drops.
 func enter() -> void:
 	disableHurtBox()
 	isDestroying = false
@@ -46,12 +47,14 @@ func enter() -> void:
 	disableHurtBox()
 	dropItems()
 
+# Cleans up when the destruction state exits.
 func exit() -> void:
 	enemy.velocity = Vector2.ZERO
 
 	if enemy.animPlayer.animation_finished.is_connected(onAnimationFinished):
 		enemy.animPlayer.animation_finished.disconnect(onAnimationFinished)
 
+# Handles gradual deceleration until animation finishes or destruction completes.
 func process(delta: float) -> EnemyState:
 	if isDestroying:
 		enemy.velocity = Vector2.ZERO
@@ -60,24 +63,29 @@ func process(delta: float) -> EnemyState:
 	enemy.velocity = enemy.velocity.move_toward(Vector2.ZERO, decelerateSpeed * delta)
 	return null
 
+# Provides a hook for physics if needed.
 func physics(_delta: float) -> EnemyState:
 	return null
 
+# Called when the enemy takes fatal damage; records the hit position and enters this state.
 func onEnemyDestroyed(hurtbox: Hurtbox) -> void:
 	damagePosition = hurtbox.global_position
 	stateMachine.changeState(self)
 
+# Finalizes destruction when the destroy animation ends and removes the enemy.
 func onAnimationFinished(anim_name: String) -> void:
 	if anim_name.begins_with(animationName):
 		isDestroying = true
 		enemy.velocity = Vector2.ZERO
 		enemy.queue_free()
 
+# Turns off the enemy’s hurtbox to prevent further hits.
 func disableHurtBox() -> void:
 	var hurtBox: Hurtbox = enemy.get_node_or_null("Hurtbox")
 	if hurtBox:
 		hurtBox.monitoring = false
 
+# Determines valid droppable items, randomizes and spawns them around the enemy.
 func dropItems() -> void:
 	if drops.size() == 0:
 		return

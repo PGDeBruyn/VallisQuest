@@ -13,6 +13,7 @@ var direction_angles := {
 	Vector2.RIGHT: -90
 }
 
+# Connects signals and initializes enemy reference and rotation.
 func _ready() -> void:
 	connect("body_entered", Callable(self, "_on_body_entered"))
 	connect("body_exited", Callable(self, "_on_body_exited"))
@@ -23,14 +24,17 @@ func _ready() -> void:
 
 	_on_direction_changed(Vector2.DOWN)  # default rotation
 
+# Emits player_spotted signal when player enters area.
 func _on_body_entered(body: Node) -> void:
 	if body is Player:
 		emit_signal("player_spotted")
 
+# Emits player_lost signal when player exits area.
 func _on_body_exited(body: Node) -> void:
 	if body is Player:
 		emit_signal("player_lost")
 
+# Updates rotation based on enemy's facing direction.
 func _on_direction_changed(new_dir: Vector2) -> void:
 	if new_dir == Vector2.ZERO:
 		return

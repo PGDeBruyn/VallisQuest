@@ -10,21 +10,17 @@ var dropProbability: float = 1.0
 # Custom discrete distribution of possible drop counts (e.g. [0,0,1,2,3] means weights)
 @export var dropCountDistribution: Array[int] = [1]
 
+# Determines the number of items to drop based on probability and distribution.
 func getDropCount() -> int:
-	# Roll to see if drop happens
 	if randf() > dropProbability:
 		return 0
 	
 	return _sampleDistribution(dropCountDistribution)
 
-
+# Samples a weighted random count from the provided distribution array.
 func _sampleDistribution(dist: Array[int]) -> int:
-	# Simple weighted random pick from distribution array
-	# Each element is an item count; frequency = weight
 	if dist.is_empty():
-		return 1  # fallback
+		return 1
 	
-	# For example: dist = [1,1,1,2,2,3] means 3x1s, 2x2s, 1x3
-	# We pick randomly an index
 	var index = randi() % dist.size()
 	return dist[index]

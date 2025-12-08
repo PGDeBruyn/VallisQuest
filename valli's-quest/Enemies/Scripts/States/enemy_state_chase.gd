@@ -3,7 +3,7 @@ extends EnemyState
 
 @export var animationName: String = "chase"
 @export var maxSpeed: float = 40.0
-@export var rotationSpeed: float = 5.0  # radians per second
+@export var rotationSpeed: float = 5.0
 @export var aggroTimeout: float = 0.5
 
 @export_category("AI")
@@ -15,6 +15,7 @@ var aggroTimer: float = 0.0
 var currentDirection: Vector2 = Vector2.DOWN
 var playerVisible: bool = false
 
+# Assigns enemy and state machine references and connects vision signals.
 func init(_enemy: Enemy, _stateMachine: EnemyStateMachine) -> void:
 	enemy = _enemy
 	stateMachine = _stateMachine
@@ -23,23 +24,25 @@ func init(_enemy: Enemy, _stateMachine: EnemyStateMachine) -> void:
 		visionArea.player_spotted.connect(Callable(self, "_onPlayerSpotted"))
 		visionArea.player_lost.connect(Callable(self, "_onPlayerLost"))
 
+# Prepares chase behavior and enables attack hit detection.
 func enter() -> void:
 	aggroTimer = aggroTimeout
 	_updateEnemyAnimation()
 	if attackArea:
 		attackArea.monitoring = true
 
+# Cleans up when leaving the chase state.
 func exit() -> void:
 	if attackArea:
 		attackArea.monitoring = false
 	playerVisible = false
 
+# Handles chasing logic and determines when to stop chasing.
 func process(delta: float) -> EnemyState:
 	var player = PlayerManager.player
 	if player == null:
 		return null
 
-	# If player is dead, do not chase
 	if player.isDead:
 		playerVisible = false
 		enemy.velocity = Vector2.ZERO
@@ -62,15 +65,18 @@ func process(delta: float) -> EnemyState:
 
 	return null
 
+# Allows physics-specific chase logic if needed.
 func physics(_delta: float) -> EnemyState:
 	return null
 
+# Updates the timer governing how long the enemy remains aggro after losing sight.
 func _updateAggroTimer(delta: float) -> void:
 	if playerVisible:
 		aggroTimer = aggroTimeout
 	else:
 		aggroTimer -= delta
 
+# Smoothly rotates the enemy toward its target direction.
 func _rotateTowards(current: Vector2, target: Vector2, maxRadiansDelta: float) -> Vector2:
 	if current == Vector2.ZERO:
 		return target
@@ -82,15 +88,16 @@ func _rotateTowards(current: Vector2, target: Vector2, maxRadiansDelta: float) -
 	var newAngle = angleCurrent + angleChange
 	return Vector2(cos(newAngle), sin(newAngle))
 
+# Updates the enemy’s animation to match chase behavior.
 func _updateEnemyAnimation() -> void:
 	enemy._updateAnimation(animationName)
 
+# Triggered when the player enters the vision area.
 func _onPlayerSpotted() -> void:
 	var player = PlayerManager.player
 	if player == null:
 		return
 
-	# Ignore player spotted if player is dead
 	if player.isDead:
 		playerVisible = false
 		return
@@ -100,5 +107,6 @@ func _onPlayerSpotted() -> void:
 		return
 	stateMachine.changeState(self)
 
+# Triggered when the player leaves the vision area.
 func _onPlayerLost() -> void:
 	playerVisible = false

@@ -11,13 +11,15 @@ signal fade_started(anim_name: String)
 signal fade_finished(anim_name: String)
 
 func _ready() -> void:
+	# Check for AnimationPlayer node and warn if missing
 	if not animationPlayer:
 		push_warning("AnimationPlayer node not found. SceneTransition fades will fallback to simple timers.")
 
 func fadeOut() -> bool:
+	# Perform fade out animation or fallback timer, skip if player dead
 	if _isPlayerDead():
 		print("[SceneTransition] Player is dead, skipping fadeOut")
-		return true  # Skip fade but pretend it finished instantly
+		return true
 
 	if get_tree().current_scene:
 		get_tree().current_scene.visible = false
@@ -34,11 +36,11 @@ func fadeOut() -> bool:
 		emit_signal("fade_finished", "timer_fade_out")
 		return true
 
-
 func fadeIn() -> bool:
+	# Perform fade in animation or fallback timer, skip if player dead
 	if _isPlayerDead():
 		print("[SceneTransition] Player is dead, skipping fadeIn")
-		return true  # Skip fade but pretend it finished instantly
+		return true
 
 	if animationPlayer and animationPlayer.has_animation(fadeInAnimName):
 		emit_signal("fade_started", fadeInAnimName)
@@ -52,12 +54,11 @@ func fadeIn() -> bool:
 		emit_signal("fade_finished", "timer_fade_in")
 		return true
 
-
 func _isPlayerDead() -> bool:
+	# Check if player exists and is in Death state
 	var player = PlayerManager.get_player()
 	if player == null:
 		return false
-	# Assuming your player has a state machine and currentState has a class name
 	var fsm = player.fsm
 	if fsm == null:
 		return false

@@ -10,12 +10,14 @@ var audio_pitch_base: float = 1.0
 @onready var audioStreamPlayer: AudioStreamPlayer = $"../AudioStreamPlayer"
 
 func _ready() -> void:
+	# Connect to letter added signal and start blinking loop, skip if in editor
 	if Engine.is_editor_hint():
 		return
 	DialogueSystem.letterAdded.connect(_checkMouthOpen)
 	_blinker()
 
 func _checkMouthOpen(letter: String) -> void:
+	# Manage mouth open state and play audio based on letter type
 	if 'aeiouy1234567890'.find(letter) >= 0:
 		openMouth = true
 		mouthOpenFrames += 3
@@ -33,6 +35,7 @@ func _checkMouthOpen(letter: String) -> void:
 		audioStreamPlayer.play()
 
 func _updatePortrait() -> void:
+	# Update sprite frame based on blink and mouth open states
 	if openMouth:
 		frame = 2
 	else:
@@ -41,6 +44,7 @@ func _updatePortrait() -> void:
 		frame += 1
 
 func _blinker() -> void:
+	# Loop that toggles blink state with random timing when eyes closed and fixed timing when open
 	if not blink:
 		await get_tree().create_timer(randf_range(0.1, 3)).timeout
 	else:
@@ -49,11 +53,13 @@ func _blinker() -> void:
 	_blinker()
 
 func _setBlink(value: bool) -> void:
+	# Setter for blink, updates portrait if changed
 	if blink != value:
 		blink = value
 		_updatePortrait()
 
 func _setOpenMouth(value: bool) -> void:
+	# Setter for openMouth, updates portrait if changed
 	if openMouth != value:
 		openMouth = value
 		_updatePortrait()

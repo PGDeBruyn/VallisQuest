@@ -11,13 +11,10 @@ var tilemap_bounds: Array[Vector2] = []
 var targetTransition: String = ""
 var positionOffset: Vector2 = Vector2.ZERO
 var currentScenePath: String = ""
-
-# New flag to control ignoring transitions temporarily
 var ignoreTransitions: bool = false
-
-# Store the name of the transition used to enter the current level to prevent backtracking
 var previousTransitionName: String = ""
 
+# Prints internal debug information about the player and FSM state
 func debug_print_state():
 	if PlayerManager and PlayerManager.player:
 		var p = PlayerManager.player
@@ -28,6 +25,7 @@ func debug_print_state():
 	else:
 		print("[DEBUG] PlayerManager or player is null")
 
+# Attempts to locate the SceneTransition node in the tree
 func _find_scene_transition() -> Node:
 	if get_tree().root.has_node("SceneTransition"):
 		var st = get_tree().root.get_node("SceneTransition")
@@ -40,6 +38,7 @@ func _find_scene_transition() -> Node:
 	print("[LevelManager DEBUG] SceneTransition not found; using timers as fallback.")
 	return null
 
+# Initializes the manager and records the current scene path on startup
 func _ready() -> void:
 	await get_tree().process_frame
 	if currentScenePath == "":
@@ -52,20 +51,21 @@ func _ready() -> void:
 	emit_signal("level_load_completed")
 	print("[LevelManager DEBUG] ready complete")
 
+# Stores tilemap bounds and emits update signal
 func set_tilemap_bounds(bounds: Array[Vector2]) -> void:
 	tilemap_bounds = bounds
 	emit_signal("tilemap_bounds_updated", bounds)
 
+# Handles full level loading sequence with fade transitions
 func loadNewLevel(levelPath: String, _targetTransition: String, _positionOffset: Vector2) -> void:
-	currentScenePath = levelPath # Set early to avoid empty path issues
+	currentScenePath = levelPath 
 	get_tree().paused = true
 	targetTransition = _targetTransition
 	positionOffset = _positionOffset
 
-	# Store the transition used to arrive here — prevents immediate backtracking
 	previousTransitionName = _targetTransition
 
-	ignoreTransitions = true  # START ignoring transitions during load
+	ignoreTransitions = true 
 	
 	await _fade_out()
 	emit_signal("level_load_initiated")
@@ -89,11 +89,12 @@ func loadNewLevel(levelPath: String, _targetTransition: String, _positionOffset:
 
 	await get_tree().process_frame
 
-	ignoreTransitions = false  # STOP ignoring transitions after load
+	ignoreTransitions = false 
 
 	emit_signal("level_load_completed")
 	print("[LevelManager DEBUG] emitted level_load_completed")
 
+# Performs fade-out animation or uses a fallback timer
 func _fade_out() -> void:
 	if _is_player_dead():
 		print("[LevelManager DEBUG] Player dead — skipping fadeOut()")
@@ -104,6 +105,7 @@ func _fade_out() -> void:
 	else:
 		await get_tree().create_timer(0.4).timeout
 
+# Performs fade-in animation or uses a fallback timer
 func _fade_in() -> void:
 	if _is_player_dead():
 		print("[LevelManager DEBUG] Player dead — skipping fadeIn()")
@@ -113,6 +115,7 @@ func _fade_in() -> void:
 	else:
 		await get_tree().create_timer(0.4).timeout
 
+# Resets all stored level transition state variables
 func reset() -> void:
 	print("[LevelManager DEBUG] LevelManager reset")
 	currentScenePath = ""
@@ -121,6 +124,7 @@ func reset() -> void:
 	previousTransitionName = ""
 	ignoreTransitions = false
 
+# Checks if the player’s FSM is currently in the Death state
 func _is_player_dead() -> bool:
 	if PlayerManager and PlayerManager.player:
 		var p = PlayerManager.player
