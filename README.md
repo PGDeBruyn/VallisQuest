@@ -1,2 +1,2 @@
 # VallisQuest
-CSCI 487 Senior Project
+Single player RPG developed using Godot Engine
